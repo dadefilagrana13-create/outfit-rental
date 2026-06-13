@@ -1,2 +1,182 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Outfit Rental</title><script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/><style>body{font-family:'Inter',sans-serif;}</style></head><script src="config.js"></script>
-<body class="bg-gray-950 text-white min-h-screen"><nav class="border-b border-gray-800 px-6 py-4 flex items-center justify-between"><div class="flex items-center gap-2"><span class="text-2xl">👗</span><span class="font-bold text-xl">Outfit Rental</span></div><div class="flex gap-2"><button onclick="showTab('plan')" class="tab-btn px-3 py-2 rounded-lg text-sm bg-indigo-600 text-white" data-tab="plan">Plan Trip</button><button onclick="showTab('bookings')" class="tab-btn px-3 py-2 rounded-lg text-sm text-gray-400" data-tab="bookings">Bookings</button></div></nav><div id="tab-plan" class="p-6 max-w-3xl mx-auto"><h1 class="text-3xl font-black mb-2">Pack light. Dress perfectly. ✈️</h1><p class="text-gray-400 mb-6">Tell us your destination — get a curated wardrobe.</p><div class="grid grid-cols-2 gap-6"><div class="space-y-4 bg-gray-900 border border-gray-800 rounded-xl p-5"><input id="t-destination" type="text" placeholder="Destination (e.g. Santorini, Greece)" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"/><div class="grid grid-cols-2 gap-2"><input id="t-from" type="date" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"/><input id="t-to" type="date" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"/></div><select id="t-occasion" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"><option>Beach & Leisure</option><option>City Exploration</option><option>Business Trip</option><option>Wedding / Formal</option><option>Luxury Resort</option></select><select id="t-style" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"><option>Casual Chic</option><option>Elegant</option><option>Streetwear</option><option>Minimalist</option><option>Boho</option></select><button onclick="generateWardrobe()" class="w-full bg-indigo-600 hover:bg-indigo-700 py-3 rounded-xl font-bold">✨ Generate Wardrobe</button></div><div id="wardrobe-result" class="bg-gray-900 border border-gray-800 rounded-xl p-5 min-h-64"><p class="text-gray-500 text-sm">Your curated wardrobe will appear here... 👗</p></div></div></div><div id="tab-bookings" class="p-6 hidden max-w-2xl"><h1 class="text-2xl font-bold mb-4">My Trip Plans 📦</h1><div id="bookings-list" class="space-y-3"></div></div><script>const SUPABASE_URL='https://nmulrsbqdeqokvrybapn.supabase.co';const SUPABASE_KEY=window.APP_CONFIG?.SUPABASE_KEY||'';const GROQ_KEY=window.APP_CONFIG?.GROQ_KEY||'';const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);function showTab(tab){document.querySelectorAll('[id^="tab-"]').forEach(el=>el.classList.add('hidden'));document.getElementById('tab-'+tab).classList.remove('hidden');document.querySelectorAll('.tab-btn').forEach(btn=>{btn.classList.remove('bg-indigo-600','text-white');btn.classList.add('text-gray-400');});const a=document.querySelector(`[data-tab="${tab}"]`);a.classList.add('bg-indigo-600','text-white');a.classList.remove('text-gray-400');if(tab==='bookings')loadBookings();}async function generateWardrobe(){const dest=document.getElementById('t-destination').value,from=document.getElementById('t-from').value,to=document.getElementById('t-to').value,occasion=document.getElementById('t-occasion').value,style=document.getElementById('t-style').value,el=document.getElementById('wardrobe-result');el.innerHTML='<p class="text-indigo-400 animate-pulse">✨ Curating wardrobe...</p>';const days=from&&to?Math.ceil((new Date(to)-new Date(from))/86400000)+' days':'';const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${GROQ_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'user',content:`Create a travel wardrobe for: ${dest} (${days}), Occasion: ${occasion}, Style: ${style}. Include: outfit list, day-by-day suggestions, estimated rental cost, packing essentials. Be specific.`}],max_tokens:600})});const data=await res.json();el.innerHTML=`<pre class="whitespace-pre-wrap text-sm text-gray-200 font-sans">${data.choices[0].message.content}</pre>`;await sb.from('or_bookings').insert([{destination:dest,from_date:from||null,to_date:to||null,occasion,style,status:'Planning'}]);}async function loadBookings(){const{data}=await sb.from('or_bookings').select('*').order('created_at',{ascending:false});document.getElementById('bookings-list').innerHTML=(data||[]).map(b=>`<div class="bg-gray-900 border border-gray-800 rounded-xl p-4"><h3 class="font-bold">✈️ ${b.destination}</h3><p class="text-sm text-gray-400">${b.from_date||'—'} → ${b.to_date||'—'}</p><p class="text-xs text-gray-500">${b.occasion} · ${b.style}</p></div>`).join('')||'<p class="text-gray-500">No plans yet.</p>';}</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outfit Rental — Pack Light, Dress Perfect</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  body{font-family:'Inter',system-ui,sans-serif;background:#0a0812;color:#e2e8f0}
+  .glass{background:rgba(255,255,255,.04);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08)}
+  .gradient-text{background:linear-gradient(135deg,#a855f7,#ec4899,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .btn{background:linear-gradient(135deg,#a855f7,#ec4899);border:none;padding:12px 28px;border-radius:10px;cursor:pointer;font-weight:700;color:white;transition:all .2s}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 8px 25px rgba(168,85,247,.4)}
+  .btn-sm{background:linear-gradient(135deg,#a855f7,#ec4899);border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:600;color:white;font-size:13px;transition:all .2s}
+  input,textarea,select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;color:#e2e8f0;width:100%}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:#a855f7}
+  .outfit-card{background:linear-gradient(145deg,rgba(168,85,247,.06),rgba(236,72,153,.04));border:1px solid rgba(168,85,247,.2);border-radius:16px;padding:20px;transition:all .3s}
+  .outfit-card:hover{border-color:rgba(168,85,247,.5);transform:translateY(-2px)}
+  .tab-active{background:rgba(168,85,247,.2);border-bottom:2px solid #a855f7}
+  .warning{background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.25);border-radius:10px;padding:12px 16px;font-size:13px;color:#fde68a;margin-bottom:24px}
+</style>
+</head>
+<body>
+<nav class="glass sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-xl">👗</div>
+    <div><h1 class="font-black text-xl gradient-text">Outfit Rental</h1><p class="text-xs text-slate-400">Pack light. Dress perfectly.</p></div>
+  </div>
+  <div class="flex gap-2">
+    <button onclick="showTab('plan')" id="tab-plan" class="px-4 py-2 rounded-lg text-sm font-medium tab-active transition-all">✈️ Plan Trip</button>
+    <button onclick="showTab('catalog')" id="tab-catalog" class="px-4 py-2 rounded-lg text-sm font-medium transition-all">👗 Catalog</button>
+    <button onclick="showTab('bookings')" id="tab-bookings" class="px-4 py-2 rounded-lg text-sm font-medium transition-all">📦 Bookings</button>
+  </div>
+</nav>
+
+<div class="max-w-6xl mx-auto px-6 py-8">
+
+  <!-- PLAN -->
+  <div id="panel-plan">
+    <div class="warning"><i class="fas fa-exclamation-triangle mr-2 text-yellow-400"></i><strong>⚠️ Note:</strong> Rental contracts require legal agreements. Going commercial requires parents as legal representatives (18+ requirement).</div>
+    <h2 class="text-3xl font-black gradient-text mb-2">Pack light. Dress perfectly. ✈️</h2>
+    <p class="text-slate-400 mb-8">Tell us your destination and we'll curate your perfect wardrobe.</p>
+
+    <div class="grid grid-cols-2 gap-8">
+      <div class="glass rounded-2xl p-6 space-y-4">
+        <h3 class="font-bold text-lg mb-4"><i class="fas fa-plane text-purple-400 mr-2"></i>Trip Details</h3>
+        <div><label class="text-xs text-slate-400 mb-1 block">Destination *</label><input id="p-dest" placeholder="e.g. Santorini, Greece"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="text-xs text-slate-400 mb-1 block">From Date</label><input id="p-from" type="date"></div>
+          <div><label class="text-xs text-slate-400 mb-1 block">To Date</label><input id="p-to" type="date"></div>
+        </div>
+        <div><label class="text-xs text-slate-400 mb-1 block">Occasion</label>
+          <select id="p-occasion">
+            <option>Beach & Leisure</option><option>City Exploration</option><option>Business Trip</option>
+            <option>Wedding / Formal Event</option><option>Luxury Resort</option><option>Adventure / Outdoor</option>
+            <option>Romantic Weekend</option>
+          </select>
+        </div>
+        <div><label class="text-xs text-slate-400 mb-1 block">Style Preference</label>
+          <select id="p-style">
+            <option>Casual Chic</option><option>Elegant / Formal</option><option>Streetwear</option>
+            <option>Minimalist</option><option>Boho / Free Spirit</option><option>Sport & Active</option>
+          </select>
+        </div>
+        <div><label class="text-xs text-slate-400 mb-1 block">Notes (body type, colors to avoid...)</label>
+          <textarea id="p-notes" rows="2" placeholder="e.g. I prefer dark colors, medium size..."></textarea>
+        </div>
+        <button onclick="generateWardrobe()" class="btn w-full text-lg">
+          <i class="fas fa-magic mr-2"></i>Generate Wardrobe
+        </button>
+      </div>
+
+      <div class="glass rounded-2xl p-6 flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-lg gradient-text">Your Curated Wardrobe</h3>
+          <button id="save-booking-btn" onclick="saveBooking()" class="btn-sm hidden"><i class="fas fa-bookmark mr-1"></i>Save Plan</button>
+        </div>
+        <div id="wardrobe-result" class="flex-1 text-slate-400 flex flex-col items-center justify-center text-center">
+          <span class="text-6xl mb-4 opacity-30">👗</span>
+          <p>Your curated wardrobe will appear here...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATALOG -->
+  <div id="panel-catalog" class="hidden">
+    <div class="flex justify-between items-center mb-6">
+      <div><h2 class="text-2xl font-bold">Outfit Catalog</h2><p class="text-slate-400 text-sm">Available items for rental</p></div>
+      <button onclick="toggleForm('item-form')" class="btn"><i class="fas fa-plus mr-2"></i>Add Item</button>
+    </div>
+    <div id="item-form" class="hidden glass rounded-2xl p-6 mb-6">
+      <div class="grid grid-cols-4 gap-4">
+        <div class="col-span-2"><label class="text-xs text-slate-400 mb-1 block">Item Name *</label><input id="i-name" placeholder="e.g. Elegant Summer Dress"></div>
+        <div><label class="text-xs text-slate-400 mb-1 block">Category</label>
+          <select id="i-cat"><option>Dress</option><option>Suit</option><option>Casual Set</option><option>Swimwear</option><option>Formal Wear</option><option>Accessories</option></select>
+        </div>
+        <div><label class="text-xs text-slate-400 mb-1 block">Brand</label><input id="i-brand" placeholder="e.g. Zara, H&M"></div>
+        <div><label class="text-xs text-slate-400 mb-1 block">Price/day (€)</label><input id="i-price" type="number" placeholder="15"></div>
+        <div><label class="text-xs text-slate-400 mb-1 block">Sizes Available</label><input id="i-sizes" placeholder="XS, S, M, L, XL"></div>
+        <div><label class="text-xs text-slate-400 mb-1 block">Colors</label><input id="i-colors" placeholder="Black, White, Navy"></div>
+        <div><label class="text-xs text-slate-400 mb-1 block">Description</label><input id="i-desc" placeholder="Brief description..."></div>
+      </div>
+      <div class="flex gap-3 mt-4">
+        <button onclick="saveItem()" class="btn"><i class="fas fa-save mr-2"></i>Save</button>
+        <button onclick="toggleForm('item-form')" class="px-4 py-2 text-slate-400 hover:text-white text-sm transition-colors">Cancel</button>
+      </div>
+    </div>
+    <div id="catalog-grid" class="grid grid-cols-3 gap-5"></div>
+  </div>
+
+  <!-- BOOKINGS -->
+  <div id="panel-bookings" class="hidden">
+    <h2 class="text-2xl font-bold mb-6">Trip Bookings 📦</h2>
+    <div id="bookings-list" class="space-y-4"></div>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-6 right-6 px-6 py-3 rounded-xl font-semibold hidden z-50 text-white"></div>
+
+<script>
+const SUPABASE_URL='https://nmulrsbqdeqokvrybapn.supabase.co'
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tdWxyc2JxZGVxb2t2cnliYXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyODY0NDcsImV4cCI6MjA5NDg2MjQ0N30.iGN_OGVkw0j3VCEi9qUroMbpT37P3UPRUf1cYyqFBys'
+const GROQ_KEY='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'
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
+let lastWardrobe=''
+
+function showToast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=`fixed bottom-6 right-6 px-6 py-3 rounded-xl font-semibold z-50 text-white ${type==='error'?'bg-red-600':'bg-purple-600'}`;setTimeout(()=>t.classList.add('hidden'),3000)}
+function showTab(tab){['plan','catalog','bookings'].forEach(t=>{document.getElementById(`panel-${t}`).classList.add('hidden');document.getElementById(`tab-${t}`).classList.remove('tab-active')});document.getElementById(`panel-${tab}`).classList.remove('hidden');document.getElementById(`tab-${tab}`).classList.add('tab-active');if(tab==='catalog')loadCatalog();if(tab==='bookings')loadBookings()}
+function toggleForm(id){document.getElementById(id).classList.toggle('hidden')}
+
+async function generateWardrobe(){
+  const dest=document.getElementById('p-dest').value,from=document.getElementById('p-from').value,to=document.getElementById('p-to').value,occasion=document.getElementById('p-occasion').value,style=document.getElementById('p-style').value,notes=document.getElementById('p-notes').value
+  if(!dest){showToast('Enter a destination','error');return}
+  const days=from&&to?Math.ceil((new Date(to)-new Date(from))/86400000):0
+  const el=document.getElementById('wardrobe-result')
+  el.innerHTML='<div class="text-4xl animate-bounce mb-4">👗</div><p class="text-purple-400 animate-pulse">Curating your wardrobe...</p>'
+  try{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:800,messages:[{role:'user',content:`You are a luxury personal stylist. Create a curated travel wardrobe.\n\nDestination: ${dest}\nDuration: ${days>0?days+' days':'TBD'}\nOccasion: ${occasion}\nStyle: ${style}\n${notes?'Notes: '+notes:''}\n\nProvide:\n1. 🌤️ WEATHER & DRESS CODE for ${dest}\n2. 👗 DAILY OUTFITS (list 3-4 specific outfit combos with items)\n3. 👠 ESSENTIAL ACCESSORIES (3 items)\n4. 💼 PACKING TIP (1 smart tip)\n5. ✨ STANDOUT LOOK (one wow outfit for a special moment)\n\nBe specific with colors, styles. Make it feel luxury and personal.`}]})})
+    const data=await res.json()
+    const text=data.choices?.[0]?.message?.content||''
+    lastWardrobe=text
+    el.innerHTML=`<div class="text-sm text-slate-300 text-left whitespace-pre-line leading-relaxed">${text.replace(/\*\*(.*?)\*\*/g,'<strong class="text-purple-300">$1</strong>').replace(/\n/g,'<br>')}</div>`
+    document.getElementById('save-booking-btn').classList.remove('hidden')
+    showToast('✅ Wardrobe ready!')
+  }catch(e){el.innerHTML='<p class="text-red-400">Error: '+e.message+'</p>'}
+}
+
+async function saveBooking(){
+  const d={destination:document.getElementById('p-dest').value,from_date:document.getElementById('p-from').value||null,to_date:document.getElementById('p-to').value||null,occasion:document.getElementById('p-occasion').value,style:document.getElementById('p-style').value,notes:lastWardrobe.substring(0,500),status:'Planning'}
+  const{error}=await sb.from('or_bookings').insert(d)
+  if(error){showToast('Error saving','error');return}
+  showToast('✅ Trip plan saved!');document.getElementById('save-booking-btn').classList.add('hidden')
+}
+
+async function saveItem(){
+  const d={name:document.getElementById('i-name').value,category:document.getElementById('i-cat').value,brand:document.getElementById('i-brand').value,price_per_day:parseFloat(document.getElementById('i-price').value)||0,sizes:document.getElementById('i-sizes').value,colors:document.getElementById('i-colors').value,description:document.getElementById('i-desc').value,available:true}
+  if(!d.name){showToast('Name required','error');return}
+  const{error}=await sb.from('or_items').insert(d)
+  if(error){showToast('Error: '+error.message,'error');return}
+  showToast('✅ Item added!');toggleForm('item-form');loadCatalog()
+}
+
+async function loadCatalog(){
+  const{data}=await sb.from('or_items').select('*').order('created_at',{ascending:false})
+  const grid=document.getElementById('catalog-grid')
+  if(!data?.length){grid.innerHTML='<div class="col-span-3 glass rounded-xl p-8 text-center text-slate-400"><span class="text-4xl block mb-3">👗</span>No items yet</div>';return}
+  grid.innerHTML=data.map(i=>`<div class="outfit-card"><div class="flex justify-between mb-2"><h3 class="font-bold">${i.name}</h3><button onclick="deleteRec('or_items','${i.id}',loadCatalog)" class="text-slate-600 hover:text-red-400"><i class="fas fa-trash text-sm"></i></button></div><p class="text-sm text-purple-400">${i.category}${i.brand?' · '+i.brand:''}</p>${i.price_per_day?`<p class="text-lg font-bold text-pink-400 mt-2">€${i.price_per_day}/day</p>`:''}<div class="text-xs text-slate-400 mt-2 space-y-0.5">${i.sizes?`<p>Sizes: ${i.sizes}</p>`:''} ${i.colors?`<p>Colors: ${i.colors}</p>`:''}</div></div>`).join('')
+}
+
+async function loadBookings(){
+  const{data}=await sb.from('or_bookings').select('*').order('created_at',{ascending:false})
+  const list=document.getElementById('bookings-list')
+  if(!data?.length){list.innerHTML='<div class="glass rounded-xl p-8 text-center text-slate-400"><span class="text-4xl block mb-3">📦</span>No bookings yet</div>';return}
+  list.innerHTML=data.map(b=>`<div class="outfit-card"><div class="flex justify-between items-start"><div><h3 class="font-bold text-lg">${b.destination}</h3><p class="text-sm text-purple-400">${b.occasion} · ${b.style}</p>${b.from_date?`<p class="text-xs text-slate-400 mt-1">${b.from_date} → ${b.to_date||'?'}</p>`:''}</div><div class="flex items-center gap-2"><span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">${b.status}</span><button onclick="deleteRec('or_bookings','${b.id}',loadBookings)" class="text-slate-600 hover:text-red-400"><i class="fas fa-trash text-sm"></i></button></div></div></div>`).join('')
+}
+
+async function deleteRec(table,id,reload){if(!confirm('Delete?'))return;await sb.from(table).delete().eq('id',id);reload()}
+</script>
+</body>
+</html>
