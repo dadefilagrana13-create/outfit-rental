@@ -2,181 +2,246 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Outfit Rental — Pack Light, Dress Perfect</title>
+<title>Outfit Rental — Pack Light, Arrive Perfect</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-  body{font-family:'Inter',system-ui,sans-serif;background:#0a0812;color:#e2e8f0}
-  .glass{background:rgba(255,255,255,.04);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08)}
-  .gradient-text{background:linear-gradient(135deg,#a855f7,#ec4899,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-  .btn{background:linear-gradient(135deg,#a855f7,#ec4899);border:none;padding:12px 28px;border-radius:10px;cursor:pointer;font-weight:700;color:white;transition:all .2s}
-  .btn:hover{transform:translateY(-1px);box-shadow:0 8px 25px rgba(168,85,247,.4)}
-  .btn-sm{background:linear-gradient(135deg,#a855f7,#ec4899);border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:600;color:white;font-size:13px;transition:all .2s}
-  input,textarea,select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;color:#e2e8f0;width:100%}
-  input:focus,textarea:focus,select:focus{outline:none;border-color:#a855f7}
-  .outfit-card{background:linear-gradient(145deg,rgba(168,85,247,.06),rgba(236,72,153,.04));border:1px solid rgba(168,85,247,.2);border-radius:16px;padding:20px;transition:all .3s}
-  .outfit-card:hover{border-color:rgba(168,85,247,.5);transform:translateY(-2px)}
-  .tab-active{background:rgba(168,85,247,.2);border-bottom:2px solid #a855f7}
-  .warning{background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.25);border-radius:10px;padding:12px 16px;font-size:13px;color:#fde68a;margin-bottom:24px}
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#faf9f7;color:#1a1a1a;font-family:'DM Sans',sans-serif}
+.header{background:#1a1a1a;padding:20px 60px;display:flex;align-items:center;justify-content:space-between}
+.header-logo{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#fff;letter-spacing:.5px}
+.header-nav{display:flex;gap:28px}
+.hn{font-size:13px;font-weight:500;cursor:pointer;color:rgba(255,255,255,.5);transition:color .2s;letter-spacing:.3px}
+.hn:hover,.hn.active{color:#fff}
+.hero-full{display:grid;grid-template-columns:1fr 1fr;min-height:600px}
+.hero-text{background:#1a1a1a;color:#fff;padding:80px 60px;display:flex;flex-direction:column;justify-content:center}
+.hero-text h1{font-family:'Cormorant Garamond',serif;font-size:56px;font-weight:600;line-height:1.05;margin-bottom:20px}
+.hero-text h1 span{font-style:italic;color:#c9a96e}
+.hero-visual{background:linear-gradient(160deg,#2d1b69,#11998e);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.floating-outfit{font-size:80px;animation:floatOut 5s ease-in-out infinite;position:relative;z-index:2}
+@keyframes floatOut{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-20px) rotate(3deg)}}
+.orbit{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.15);animation:spin 20s linear infinite}
+.orbit1{width:300px;height:300px}
+.orbit2{width:450px;height:450px;animation-direction:reverse;animation-duration:30s}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.content-area{max-width:1200px;margin:0 auto;padding:48px 60px 80px}
+.panel{display:none}.panel.active{display:block}
+.plan-card{background:#fff;border-radius:20px;border:1.5px solid #e8e4dc;overflow:hidden;transition:all .3s;cursor:pointer}
+.plan-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.08);border-color:#c9a96e}
+.pc-img{height:200px;display:flex;align-items:center;justify-content:center;font-size:80px;position:relative}
+.dest-tag{position:absolute;bottom:12px;left:12px;background:#1a1a1a;color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600}
+.pc-body{padding:20px}
+.outfit-item{background:#fff;border:1.5px solid #e8e4dc;border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:8px;transition:all .2s}
+.outfit-item:hover{border-color:#c9a96e}
+.wardrobe-out{background:#faf9f7;border:1.5px solid #e8e4dc;border-radius:16px;padding:24px;min-height:280px;font-size:14px;line-height:1.8;color:#1a1a1a;overflow-y:auto;max-height:400px}
+label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:4px;margin-top:14px}
+input,select,textarea{border:1.5px solid #e8e4dc;border-radius:9px;padding:10px 14px;font-size:14px;width:100%;outline:none;transition:border .2s;font-family:'DM Sans',sans-serif;background:#fff;color:#1a1a1a}
+input:focus,select:focus,textarea:focus{border-color:#c9a96e}
+.btn-dark{background:#1a1a1a;color:#fff;border:none;padding:12px 26px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.btn-dark:hover{background:#333;transform:translateY(-1px)}
+.btn-gold{background:#c9a96e;color:#fff;border:none;padding:12px 26px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.btn-gold:hover{background:#b8955a;transform:translateY(-1px)}
+.btn-outline-d{background:transparent;border:1.5px solid #1a1a1a;color:#1a1a1a;padding:11px 22px;border-radius:10px;font-weight:500;font-size:14px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.btn-outline-d:hover{background:#1a1a1a;color:#fff}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.form-box{background:#fff;border:1.5px solid #e8e4dc;border-radius:16px;padding:28px;margin-bottom:24px;display:none}
+.form-box.open{display:block}
+.booking-row{background:#fff;border:1.5px solid #e8e4dc;border-radius:12px;padding:18px 22px;transition:all .2s;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.booking-row:hover{border-color:#c9a96e}
+.warn{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 18px;font-size:13px;color:#92400e;margin-bottom:24px}
 </style>
 </head>
 <body>
-<nav class="glass sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
-  <div class="flex items-center gap-3">
-    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-xl">👗</div>
-    <div><h1 class="font-black text-xl gradient-text">Outfit Rental</h1><p class="text-xs text-slate-400">Pack light. Dress perfectly.</p></div>
+
+<div class="header">
+  <div class="header-logo">Outfit Rental</div>
+  <div class="header-nav">
+    <span class="hn active" onclick="showPage('plan')" id="hn-plan">Plan Trip</span>
+    <span class="hn" onclick="showPage('catalog')" id="hn-catalog">Catalog</span>
+    <span class="hn" onclick="showPage('bookings')" id="hn-bookings">Bookings</span>
   </div>
-  <div class="flex gap-2">
-    <button onclick="showTab('plan')" id="tab-plan" class="px-4 py-2 rounded-lg text-sm font-medium tab-active transition-all">✈️ Plan Trip</button>
-    <button onclick="showTab('catalog')" id="tab-catalog" class="px-4 py-2 rounded-lg text-sm font-medium transition-all">👗 Catalog</button>
-    <button onclick="showTab('bookings')" id="tab-bookings" class="px-4 py-2 rounded-lg text-sm font-medium transition-all">📦 Bookings</button>
+</div>
+
+<div class="hero-full">
+  <div class="hero-text">
+    <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Travel without overpacking</div>
+    <h1>Pack one bag.<br>Dress like a <span>local.</span></h1>
+    <p style="color:rgba(255,255,255,.6);font-size:16px;line-height:1.7;max-width:380px;margin-bottom:32px">Tell us your destination and trip style. AI curates the perfect wardrobe waiting for you when you arrive.</p>
+    <div style="display:flex;gap:12px">
+      <button class="btn-gold" onclick="showPage('plan')">Plan My Trip →</button>
+      <button class="btn-outline-d" style="color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.2)" onclick="showPage('catalog')">Browse Catalog</button>
+    </div>
   </div>
-</nav>
+  <div class="hero-visual">
+    <div class="orbit orbit1"></div>
+    <div class="orbit orbit2"></div>
+    <div class="floating-outfit">👗</div>
+  </div>
+</div>
 
-<div class="max-w-6xl mx-auto px-6 py-8">
+<div class="content-area">
 
-  <!-- PLAN -->
-  <div id="panel-plan">
-    <div class="warning"><i class="fas fa-exclamation-triangle mr-2 text-yellow-400"></i><strong>⚠️ Note:</strong> Rental contracts require legal agreements. Going commercial requires parents as legal representatives (18+ requirement).</div>
-    <h2 class="text-3xl font-black gradient-text mb-2">Pack light. Dress perfectly. ✈️</h2>
-    <p class="text-slate-400 mb-8">Tell us your destination and we'll curate your perfect wardrobe.</p>
-
-    <div class="grid grid-cols-2 gap-8">
-      <div class="glass rounded-2xl p-6 space-y-4">
-        <h3 class="font-bold text-lg mb-4"><i class="fas fa-plane text-purple-400 mr-2"></i>Trip Details</h3>
-        <div><label class="text-xs text-slate-400 mb-1 block">Destination *</label><input id="p-dest" placeholder="e.g. Santorini, Greece"></div>
-        <div class="grid grid-cols-2 gap-3">
-          <div><label class="text-xs text-slate-400 mb-1 block">From Date</label><input id="p-from" type="date"></div>
-          <div><label class="text-xs text-slate-400 mb-1 block">To Date</label><input id="p-to" type="date"></div>
-        </div>
-        <div><label class="text-xs text-slate-400 mb-1 block">Occasion</label>
-          <select id="p-occasion">
+  <!-- PLAN TRIP -->
+  <div id="panel-plan" class="panel active">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+      <div>
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;margin-bottom:20px">Plan Your Wardrobe</h2>
+        <div class="warn">⚠️ Commercial rental requires legal agreements (18+). Parents must act as legal representatives for all contracts.</div>
+        <div style="background:#fff;border:1.5px solid #e8e4dc;border-radius:16px;padding:28px">
+          <label>Destination *</label>
+          <input id="p-dest" placeholder="Santorini, Greece">
+          <div class="g2">
+            <div><label>From</label><input id="p-from" type="date"></div>
+            <div><label>To</label><input id="p-to" type="date"></div>
+          </div>
+          <label>Occasion</label>
+          <select id="p-occ">
             <option>Beach & Leisure</option><option>City Exploration</option><option>Business Trip</option>
-            <option>Wedding / Formal Event</option><option>Luxury Resort</option><option>Adventure / Outdoor</option>
-            <option>Romantic Weekend</option>
+            <option>Wedding / Formal</option><option>Luxury Resort</option><option>Adventure / Outdoor</option>
           </select>
-        </div>
-        <div><label class="text-xs text-slate-400 mb-1 block">Style Preference</label>
+          <label>Style</label>
           <select id="p-style">
             <option>Casual Chic</option><option>Elegant / Formal</option><option>Streetwear</option>
-            <option>Minimalist</option><option>Boho / Free Spirit</option><option>Sport & Active</option>
+            <option>Minimalist</option><option>Boho</option><option>Resort Luxury</option>
           </select>
+          <label>Your Notes (size, colors to avoid...)</label>
+          <textarea id="p-notes" rows="2" placeholder="e.g. I'm a size M, prefer neutral tones, hate denim..."></textarea>
+          <button class="btn-dark" style="width:100%;margin-top:18px;padding:14px" onclick="generateWardrobe()">✨ Generate Wardrobe</button>
         </div>
-        <div><label class="text-xs text-slate-400 mb-1 block">Notes (body type, colors to avoid...)</label>
-          <textarea id="p-notes" rows="2" placeholder="e.g. I prefer dark colors, medium size..."></textarea>
-        </div>
-        <button onclick="generateWardrobe()" class="btn w-full text-lg">
-          <i class="fas fa-magic mr-2"></i>Generate Wardrobe
-        </button>
       </div>
-
-      <div class="glass rounded-2xl p-6 flex flex-col">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-bold text-lg gradient-text">Your Curated Wardrobe</h3>
-          <button id="save-booking-btn" onclick="saveBooking()" class="btn-sm hidden"><i class="fas fa-bookmark mr-1"></i>Save Plan</button>
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <h3 style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700">Your Wardrobe</h3>
+          <button id="save-w-btn" style="display:none" onclick="saveBooking()" class="btn-gold">💾 Save Plan</button>
         </div>
-        <div id="wardrobe-result" class="flex-1 text-slate-400 flex flex-col items-center justify-center text-center">
-          <span class="text-6xl mb-4 opacity-30">👗</span>
-          <p>Your curated wardrobe will appear here...</p>
+        <div class="wardrobe-out" id="wardrobe-result">
+          <div style="color:#ccc;text-align:center;padding:60px 0">
+            <div style="font-size:56px;margin-bottom:12px">👗</div>
+            <div>Enter your destination to get a curated wardrobe</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- CATALOG -->
-  <div id="panel-catalog" class="hidden">
-    <div class="flex justify-between items-center mb-6">
-      <div><h2 class="text-2xl font-bold">Outfit Catalog</h2><p class="text-slate-400 text-sm">Available items for rental</p></div>
-      <button onclick="toggleForm('item-form')" class="btn"><i class="fas fa-plus mr-2"></i>Add Item</button>
+  <div id="panel-catalog" class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px">
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700">Item Catalog</h2>
+      <button class="btn-dark" onclick="document.getElementById('item-form').classList.toggle('open')">+ Add Item</button>
     </div>
-    <div id="item-form" class="hidden glass rounded-2xl p-6 mb-6">
-      <div class="grid grid-cols-4 gap-4">
-        <div class="col-span-2"><label class="text-xs text-slate-400 mb-1 block">Item Name *</label><input id="i-name" placeholder="e.g. Elegant Summer Dress"></div>
-        <div><label class="text-xs text-slate-400 mb-1 block">Category</label>
-          <select id="i-cat"><option>Dress</option><option>Suit</option><option>Casual Set</option><option>Swimwear</option><option>Formal Wear</option><option>Accessories</option></select>
-        </div>
-        <div><label class="text-xs text-slate-400 mb-1 block">Brand</label><input id="i-brand" placeholder="e.g. Zara, H&M"></div>
-        <div><label class="text-xs text-slate-400 mb-1 block">Price/day (€)</label><input id="i-price" type="number" placeholder="15"></div>
-        <div><label class="text-xs text-slate-400 mb-1 block">Sizes Available</label><input id="i-sizes" placeholder="XS, S, M, L, XL"></div>
-        <div><label class="text-xs text-slate-400 mb-1 block">Colors</label><input id="i-colors" placeholder="Black, White, Navy"></div>
-        <div><label class="text-xs text-slate-400 mb-1 block">Description</label><input id="i-desc" placeholder="Brief description..."></div>
+    <div class="form-box" id="item-form">
+      <div class="g3">
+        <div style="grid-column:span 2"><label>Item Name *</label><input id="it-name" placeholder="Elegant Summer Dress — Versace"></div>
+        <div><label>Category</label><select id="it-cat"><option>Dress</option><option>Suit</option><option>Casual Set</option><option>Swimwear</option><option>Formal Wear</option><option>Accessories</option></select></div>
+        <div><label>Brand</label><input id="it-brand" placeholder="Zara"></div>
+        <div><label>Price/day (€)</label><input id="it-price" type="number" placeholder="18"></div>
+        <div><label>Sizes</label><input id="it-sizes" placeholder="XS, S, M, L"></div>
+        <div style="grid-column:span 3"><label>Colors</label><input id="it-colors" placeholder="Ivory, Sand, Navy"></div>
       </div>
-      <div class="flex gap-3 mt-4">
-        <button onclick="saveItem()" class="btn"><i class="fas fa-save mr-2"></i>Save</button>
-        <button onclick="toggleForm('item-form')" class="px-4 py-2 text-slate-400 hover:text-white text-sm transition-colors">Cancel</button>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="btn-dark" onclick="saveItem()">Add to Catalog</button>
+        <button class="btn-outline-d" onclick="document.getElementById('item-form').classList.remove('open')">Cancel</button>
       </div>
     </div>
-    <div id="catalog-grid" class="grid grid-cols-3 gap-5"></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px" id="catalog-grid"></div>
   </div>
 
   <!-- BOOKINGS -->
-  <div id="panel-bookings" class="hidden">
-    <h2 class="text-2xl font-bold mb-6">Trip Bookings 📦</h2>
-    <div id="bookings-list" class="space-y-4"></div>
+  <div id="panel-bookings" class="panel">
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;margin-bottom:24px">Trip Bookings</h2>
+    <div id="bookings-list"></div>
   </div>
 </div>
 
-<div id="toast" class="fixed bottom-6 right-6 px-6 py-3 rounded-xl font-semibold hidden z-50 text-white"></div>
-
 <script>
-const SUPABASE_URL='https://nmulrsbqdeqokvrybapn.supabase.co'
-const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tdWxyc2JxZGVxb2t2cnliYXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyODY0NDcsImV4cCI6MjA5NDg2MjQ0N30.iGN_OGVkw0j3VCEi9qUroMbpT37P3UPRUf1cYyqFBys'
-const GROQ_KEY='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'
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
+const SB=supabase.createClient('https://nmulrsbqdeqokvrybapn.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tdWxyc2JxZGVxb2t2cnliYXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyODY0NDcsImV4cCI6MjA5NDg2MjQ0N30.iGN_OGVkw0j3VCEi9qUroMbpT37P3UPRUf1cYyqFBys')
+const GROQ='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'
 let lastWardrobe=''
 
-function showToast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=`fixed bottom-6 right-6 px-6 py-3 rounded-xl font-semibold z-50 text-white ${type==='error'?'bg-red-600':'bg-purple-600'}`;setTimeout(()=>t.classList.add('hidden'),3000)}
-function showTab(tab){['plan','catalog','bookings'].forEach(t=>{document.getElementById(`panel-${t}`).classList.add('hidden');document.getElementById(`tab-${t}`).classList.remove('tab-active')});document.getElementById(`panel-${tab}`).classList.remove('hidden');document.getElementById(`tab-${tab}`).classList.add('tab-active');if(tab==='catalog')loadCatalog();if(tab==='bookings')loadBookings()}
-function toggleForm(id){document.getElementById(id).classList.toggle('hidden')}
+function showPage(t){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.hn').forEach(n=>n.classList.remove('active'));document.getElementById('panel-'+t).classList.add('active');document.getElementById('hn-'+t).classList.add('active');if(t==='catalog')loadCatalog();if(t==='bookings')loadBookings()}
+
+const destBgs={'Beach':'linear-gradient(135deg,#a1c4fd,#c2e9fb)','City':'linear-gradient(135deg,#fccb90,#d57eeb)','Business':'linear-gradient(135deg,#2d2d2d,#4a4a4a)','Wedding':'linear-gradient(135deg,#ffecd2,#fcb69f)','Resort':'linear-gradient(135deg,#84fab0,#8fd3f4)','Adventure':'linear-gradient(135deg,#a8edea,#fed6e3)'}
+
+async function seedData(){
+  const[{data:bk},{data:ct}]=await Promise.all([SB.from('or_bookings').select('id').limit(1),SB.from('or_items').select('id').limit(1)])
+  if(!bk?.length)await SB.from('or_bookings').insert([
+    {destination:'Santorini, Greece',from_date:'2026-07-10',to_date:'2026-07-17',occasion:'Beach & Leisure',style:'Resort Luxury',notes:'Curated: 2 linen dresses, 1 swimwear set, 1 kaftan, espadrilles, sun hat, gold accessories.',status:'Confirmed'},
+    {destination:'Paris, France',from_date:'2026-08-20',to_date:'2026-08-24',occasion:'City Exploration',style:'Casual Chic',notes:'Curated: striped Breton top, tailored trousers, beige trench, ankle boots, canvas tote.',status:'Planning'},
+  ])
+  if(!ct?.length)await SB.from('or_items').insert([
+    {name:'Linen Resort Dress',category:'Dress',brand:'Zimmermann',price_per_day:35,sizes:'XS, S, M, L',colors:'White, Sand, Terracotta',available:true},
+    {name:'Tailored Blazer Set',category:'Suit',brand:'Theory',price_per_day:45,sizes:'S, M, L',colors:'Ivory, Camel, Black',available:true},
+    {name:'Summer Bikini Set',category:'Swimwear',brand:'Eres',price_per_day:20,sizes:'XS, S, M',colors:'Navy, Coral, Sage',available:true},
+    {name:'Silk Evening Dress',category:'Formal Wear',brand:'Reformation',price_per_day:55,sizes:'XS, S, M',colors:'Champagne, Blush, Midnight',available:true},
+  ])
+}
 
 async function generateWardrobe(){
-  const dest=document.getElementById('p-dest').value,from=document.getElementById('p-from').value,to=document.getElementById('p-to').value,occasion=document.getElementById('p-occasion').value,style=document.getElementById('p-style').value,notes=document.getElementById('p-notes').value
-  if(!dest){showToast('Enter a destination','error');return}
+  const dest=document.getElementById('p-dest').value,from=document.getElementById('p-from').value,to=document.getElementById('p-to').value,occ=document.getElementById('p-occ').value,style=document.getElementById('p-style').value,notes=document.getElementById('p-notes').value
+  if(!dest){alert('Enter a destination');return}
   const days=from&&to?Math.ceil((new Date(to)-new Date(from))/86400000):0
-  const el=document.getElementById('wardrobe-result')
-  el.innerHTML='<div class="text-4xl animate-bounce mb-4">👗</div><p class="text-purple-400 animate-pulse">Curating your wardrobe...</p>'
-  try{
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:800,messages:[{role:'user',content:`You are a luxury personal stylist. Create a curated travel wardrobe.\n\nDestination: ${dest}\nDuration: ${days>0?days+' days':'TBD'}\nOccasion: ${occasion}\nStyle: ${style}\n${notes?'Notes: '+notes:''}\n\nProvide:\n1. 🌤️ WEATHER & DRESS CODE for ${dest}\n2. 👗 DAILY OUTFITS (list 3-4 specific outfit combos with items)\n3. 👠 ESSENTIAL ACCESSORIES (3 items)\n4. 💼 PACKING TIP (1 smart tip)\n5. ✨ STANDOUT LOOK (one wow outfit for a special moment)\n\nBe specific with colors, styles. Make it feel luxury and personal.`}]})})
-    const data=await res.json()
-    const text=data.choices?.[0]?.message?.content||''
-    lastWardrobe=text
-    el.innerHTML=`<div class="text-sm text-slate-300 text-left whitespace-pre-line leading-relaxed">${text.replace(/\*\*(.*?)\*\*/g,'<strong class="text-purple-300">$1</strong>').replace(/\n/g,'<br>')}</div>`
-    document.getElementById('save-booking-btn').classList.remove('hidden')
-    showToast('✅ Wardrobe ready!')
-  }catch(e){el.innerHTML='<p class="text-red-400">Error: '+e.message+'</p>'}
+  document.getElementById('wardrobe-result').innerHTML='<div style="text-align:center;padding:40px;color:#c9a96e;font-family:DM Sans,sans-serif">✨ Styling your wardrobe...</div>'
+  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:800,messages:[{role:'user',content:`You are a luxury personal stylist. Create a curated travel wardrobe.\n\nDestination: ${dest}\nDuration: ${days>0?days+' days':'TBD'}\nOccasion: ${occ}\nStyle: ${style}\n${notes?'Notes: '+notes:''}\n\nProvide:\n🌤️ **DRESS CODE & WEATHER:**\n\n👗 **YOUR OUTFITS (${Math.max(3,days||4)} combos):**\n1. Day 1: ...\n2. Day 2: ...\n3. Evening look: ...\n\n👠 **ACCESSORIES (3 key pieces):**\n\n💼 **PACKING LIST:**\n\n✨ **ONE STANDOUT LOOK:** ...\n\nBe specific with colors, fabrics, and styles. Think luxury editorial.`}]})})
+  const d=await res.json()
+  const text=d.choices?.[0]?.message?.content||''
+  lastWardrobe=text
+  document.getElementById('wardrobe-result').innerHTML=`<div style="font-size:14px;line-height:1.8">${text.replace(/\*\*(.*?)\*\*/g,'<strong style="color:#c9a96e">$1</strong>').replace(/\n/g,'<br>')}</div>`
+  document.getElementById('save-w-btn').style.display='block'
 }
 
 async function saveBooking(){
-  const d={destination:document.getElementById('p-dest').value,from_date:document.getElementById('p-from').value||null,to_date:document.getElementById('p-to').value||null,occasion:document.getElementById('p-occasion').value,style:document.getElementById('p-style').value,notes:lastWardrobe.substring(0,500),status:'Planning'}
-  const{error}=await sb.from('or_bookings').insert(d)
-  if(error){showToast('Error saving','error');return}
-  showToast('✅ Trip plan saved!');document.getElementById('save-booking-btn').classList.add('hidden')
+  const d={destination:document.getElementById('p-dest').value,from_date:document.getElementById('p-from').value||null,to_date:document.getElementById('p-to').value||null,occasion:document.getElementById('p-occ').value,style:document.getElementById('p-style').value,notes:lastWardrobe.substring(0,500),status:'Planning'}
+  await SB.from('or_bookings').insert(d);document.getElementById('save-w-btn').style.display='none';alert('Trip plan saved!')
 }
 
 async function saveItem(){
-  const d={name:document.getElementById('i-name').value,category:document.getElementById('i-cat').value,brand:document.getElementById('i-brand').value,price_per_day:parseFloat(document.getElementById('i-price').value)||0,sizes:document.getElementById('i-sizes').value,colors:document.getElementById('i-colors').value,description:document.getElementById('i-desc').value,available:true}
-  if(!d.name){showToast('Name required','error');return}
-  const{error}=await sb.from('or_items').insert(d)
-  if(error){showToast('Error: '+error.message,'error');return}
-  showToast('✅ Item added!');toggleForm('item-form');loadCatalog()
+  const d={name:document.getElementById('it-name').value,category:document.getElementById('it-cat').value,brand:document.getElementById('it-brand').value,price_per_day:parseFloat(document.getElementById('it-price').value)||0,sizes:document.getElementById('it-sizes').value,colors:document.getElementById('it-colors').value,available:true}
+  if(!d.name)return
+  await SB.from('or_items').insert(d);document.getElementById('item-form').classList.remove('open');loadCatalog()
 }
 
 async function loadCatalog(){
-  const{data}=await sb.from('or_items').select('*').order('created_at',{ascending:false})
+  const{data}=await SB.from('or_items').select('*').order('created_at',{ascending:false})
   const grid=document.getElementById('catalog-grid')
-  if(!data?.length){grid.innerHTML='<div class="col-span-3 glass rounded-xl p-8 text-center text-slate-400"><span class="text-4xl block mb-3">👗</span>No items yet</div>';return}
-  grid.innerHTML=data.map(i=>`<div class="outfit-card"><div class="flex justify-between mb-2"><h3 class="font-bold">${i.name}</h3><button onclick="deleteRec('or_items','${i.id}',loadCatalog)" class="text-slate-600 hover:text-red-400"><i class="fas fa-trash text-sm"></i></button></div><p class="text-sm text-purple-400">${i.category}${i.brand?' · '+i.brand:''}</p>${i.price_per_day?`<p class="text-lg font-bold text-pink-400 mt-2">€${i.price_per_day}/day</p>`:''}<div class="text-xs text-slate-400 mt-2 space-y-0.5">${i.sizes?`<p>Sizes: ${i.sizes}</p>`:''} ${i.colors?`<p>Colors: ${i.colors}</p>`:''}</div></div>`).join('')
+  if(!data?.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#aaa;padding:48px">No items yet</div>';return}
+  const catEmoji={Dress:'👗',Suit:'🤵',Swimwear:'👙','Formal Wear':'🎀','Casual Set':'👚',Accessories:'💍'}
+  const catBg={Dress:'linear-gradient(135deg,#fce4ec,#f8bbd0)',Suit:'linear-gradient(135deg,#e8eaf6,#c5cae9)',Swimwear:'linear-gradient(135deg,#e0f7fa,#b2ebf2)','Formal Wear':'linear-gradient(135deg,#fce4ec,#f48fb1)','Casual Set':'linear-gradient(135deg,#f9fbe7,#dcedc8)',Accessories:'linear-gradient(135deg,#fff8e1,#ffe082)'}
+  grid.innerHTML=data.map(i=>`<div class="plan-card">
+    <div class="pc-img" style="background:${catBg[i.category]||'linear-gradient(135deg,#f5f5f5,#eeeeee)'}">
+      <span style="font-size:56px">${catEmoji[i.category]||'👔'}</span>
+      <span class="dest-tag">${i.category}</span>
+    </div>
+    <div class="pc-body">
+      <div style="font-weight:700;font-size:15px;margin-bottom:3px">${i.name}</div>
+      ${i.brand?`<div style="font-size:12px;color:#888;margin-bottom:8px">${i.brand}</div>`:''}
+      ${i.price_per_day?`<div style="font-size:16px;font-weight:800;color:#1a1a1a;margin-bottom:6px">€${i.price_per_day}/day</div>`:''}
+      <div style="font-size:12px;color:#888">${i.sizes?'📏 '+i.sizes:''} ${i.colors?'· '+i.colors:''}</div>
+    </div>
+  </div>`).join('')
 }
 
 async function loadBookings(){
-  const{data}=await sb.from('or_bookings').select('*').order('created_at',{ascending:false})
+  const{data}=await SB.from('or_bookings').select('*').order('created_at',{ascending:false})
   const list=document.getElementById('bookings-list')
-  if(!data?.length){list.innerHTML='<div class="glass rounded-xl p-8 text-center text-slate-400"><span class="text-4xl block mb-3">📦</span>No bookings yet</div>';return}
-  list.innerHTML=data.map(b=>`<div class="outfit-card"><div class="flex justify-between items-start"><div><h3 class="font-bold text-lg">${b.destination}</h3><p class="text-sm text-purple-400">${b.occasion} · ${b.style}</p>${b.from_date?`<p class="text-xs text-slate-400 mt-1">${b.from_date} → ${b.to_date||'?'}</p>`:''}</div><div class="flex items-center gap-2"><span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">${b.status}</span><button onclick="deleteRec('or_bookings','${b.id}',loadBookings)" class="text-slate-600 hover:text-red-400"><i class="fas fa-trash text-sm"></i></button></div></div></div>`).join('')
+  if(!data?.length){list.innerHTML='<div style="text-align:center;color:#aaa;padding:48px">No bookings yet</div>';return}
+  const statusColor={Confirmed:'#d1fae5|#065f46',Planning:'#fef3c7|#92400e',Cancelled:'#f3f4f6|#6b7280'}
+  list.innerHTML=data.map(b=>`<div class="booking-row">
+    <div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:4px">✈️ ${b.destination}</div>
+      <div style="font-size:13px;color:#888">${b.occasion} · ${b.style} ${b.from_date?'· '+b.from_date+' → '+(b.to_date||'?'):''}</div>
+      ${b.notes?`<div style="font-size:12px;color:#aaa;margin-top:6px;font-style:italic">"${b.notes.substring(0,80)}..."</div>`:''}
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="background:${(statusColor[b.status]||'#f3f4f6|#6b7280').split('|')[0]};color:${(statusColor[b.status]||'#f3f4f6|#6b7280').split('|')[1]};padding:4px 12px;border-radius:7px;font-size:12px;font-weight:700">${b.status||'Planning'}</span>
+    </div>
+  </div>`).join('')
 }
 
-async function deleteRec(table,id,reload){if(!confirm('Delete?'))return;await sb.from(table).delete().eq('id',id);reload()}
+async function init(){await seedData()}
+init()
 </script>
 </body>
 </html>
